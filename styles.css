@@ -582,6 +582,19 @@ button { color: inherit; }
   letter-spacing: .04em;
   text-transform: uppercase;
 }
+
+.campaign-product-image {
+  position: relative;
+  z-index: 1;
+  display: block;
+  max-width: 108px;
+  max-height: 132px;
+  width: auto;
+  height: auto;
+  align-self: flex-end;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 20px rgba(0,0,0,0.18));
+}
 .campaign-packshot {
   position: relative;
   z-index: 1;
