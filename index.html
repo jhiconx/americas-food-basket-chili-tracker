@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#146b36" />
+  <meta name="description" content="America's Food Basket Chili Rewards Tracker for live Chili rewards and redemption activity on Base." />
+  <title>America's Food Basket — Chili Rewards Tracker</title>
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/assets/favicon.png" />
+  <link rel="preload" href="/assets/americas-food-basket-logo.png" as="image" />
+  <link rel="preload" href="/assets/chili-mascot.png" as="image" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand-lockup" href="#top" aria-label="America's Food Basket Chili Rewards Tracker home">
+      <div class="brand-stack">
+        <img class="brand-logo" src="/assets/americas-food-basket-logo.png" alt="America's Food Basket" />
+        <span class="brand-subtitle">A registered GFT Rewards Distributor</span>
+      </div>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="product-name">Chili Rewards Tracker</span>
+    </a>
+
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <a class="active" href="#dashboard">Dashboard</a>
+      <a href="#activity">Rewards &amp; Redemptions</a>
+      <a href="#data-notes">Data Notes</a>
+    </nav>
+
+    <div class="header-actions">
+      <span class="live-chip"><span class="live-dot"></span>Live</span>
+      <a class="base-link" id="headerExplorerLink" href="https://basescan.org/token/0x25Ec4c3eF2A21d178922Fb02c7F92111852165E8#transactions" target="_blank" rel="noopener noreferrer">View on BaseScan ↗</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section id="dashboard" class="hero-wrap page-shell">
+      <div class="hero-panel">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span>AMERICA'S FOOD BASKET STORE VISIBILITY</div>
+          <h1>Chili Rewards<br /><span>Tracker</span></h1>
+          <p>Live visibility into Chili rewards issued and redemptions completed for <strong id="heroStoreName">America's Food Basket Rockaway</strong> on Base.</p>
+          <div class="hero-status">
+            <span id="connectionStatus" class="connection-pill loading">Connecting to live Base data…</span>
+            <span id="lastUpdated">Not updated yet</span>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="hero-orbit orbit-one"></div>
+          <div class="hero-orbit orbit-two"></div>
+          <div class="brand-card">
+            <img src="/assets/americas-food-basket-logo.png" alt="" />
+            <span>A registered GFT Rewards Distributor</span>
+            <strong id="brandCardStoreName">America's Food Basket Rockaway</strong>
+            <small id="brandCardWalletLabel">0x7d6eB946664f1dEFA40c9582819e251ae994a05e</small>
+          </div>
+          <div class="mascot-card">
+            <img src="/assets/chili-mascot.png" alt="" />
+          </div>
+          <div class="powered-card">
+            <span>Rewards powered by</span>
+            <strong>GFT Rewards</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="metrics-section page-shell" aria-label="America's Food Basket Chili rewards and redemption metrics">
+      <div class="section-heading compact">
+        <div>
+          <span class="section-kicker">LIVE STORE TOTALS</span>
+          <h2>Rewards and redemption activity</h2>
+        </div>
+        <button id="topRefreshButton" class="refresh-button" type="button" aria-describedby="refreshFeedback">↻ Refresh data</button>
+      </div>
+      <span id="refreshFeedback" class="refresh-feedback" aria-live="polite"></span>
+
+      <div class="metric-grid">
+        <article class="metric-card reward-count-card">
+          <div class="metric-topline">
+            <span class="metric-icon reward-icon">5</span>
+            <span class="metric-tag">Rewards</span>
+          </div>
+          <span class="metric-label">Rewards Issued</span>
+          <strong id="rewardTransactions" class="metric-number">—</strong>
+          <span class="metric-sub">5 CHI reward transactions into this store wallet</span>
+        </article>
+
+        <article class="metric-card reward-chi-card">
+          <div class="metric-topline">
+            <span class="metric-icon chili-icon">CHI</span>
+            <span class="metric-tag">Issued</span>
+          </div>
+          <span class="metric-label">Chilis Rewarded</span>
+          <strong id="rewardChiIssued" class="metric-number">—</strong>
+          <span class="metric-sub">CHI delivered into this store wallet</span>
+        </article>
+
+        <article class="metric-card redemption-count-card">
+          <div class="metric-topline">
+            <span class="metric-icon redemption-icon">3</span>
+            <span class="metric-tag">Redemptions</span>
+          </div>
+          <span class="metric-label">Redemptions Completed</span>
+          <strong id="redemptionTransactions" class="metric-number">—</strong>
+          <span class="metric-sub">3 CHI redemption transactions from this store wallet</span>
+        </article>
+
+        <article class="metric-card redeemed-chi-card">
+          <div class="metric-topline">
+            <span class="metric-icon check-icon">✓</span>
+            <span class="metric-tag">Redeemed</span>
+          </div>
+          <span class="metric-label">Chilis Redeemed</span>
+          <strong id="chiRedeemed" class="metric-number">—</strong>
+          <span class="metric-sub">CHI used by this store to complete redemptions</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="program-strip page-shell" aria-label="Program rules">
+      <div class="program-rule">
+        <span class="rule-number">5</span>
+        <div><strong>CHI reward</strong><span>issued into the store wallet per qualifying trip</span></div>
+      </div>
+      <div class="rule-arrow" aria-hidden="true">→</div>
+      <div class="program-rule">
+        <span class="rule-number redemption">3</span>
+        <div><strong>CHI redemption</strong><span>sent from the store wallet per completed redemption</span></div>
+      </div>
+      <div class="program-source">
+        <span>Tracked wallet</span>
+        <strong id="programWalletShort">0x7d6e…a05e</strong>
+      </div>
+    </section>
+
+    <section id="activity" class="activity-section page-shell">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">LIVE BASE ACTIVITY</span>
+          <h2>Chili Rewards and Redemptions</h2>
+          <p>Live activity for <strong id="activityStoreName">America's Food Basket Rockaway</strong>. The tracker is keyed to the public wallet below and shows the latest reward and redemption transactions tied to that store.</p>
+        </div>
+        <button id="activityRefreshButton" class="refresh-button secondary" type="button">↻ Refresh activity</button>
+      </div>
+
+      <div class="activity-controls" aria-label="Store and activity filters">
+        <div class="store-focus-card">
+          <span>Tracked public key</span>
+          <strong id="trackedStoreName">America's Food Basket Rockaway</strong>
+          <a id="trackedWalletLink" class="focus-wallet-link" href="https://basescan.org/address/0x7d6eB946664f1dEFA40c9582819e251ae994a05e" target="_blank" rel="noopener noreferrer">0x7d6eB946664f1dEFA40c9582819e251ae994a05e ↗</a>
+        </div>
+        <label class="select-control">
+          <span>Activity type</span>
+          <select id="activityTypeFilter">
+            <option value="all">All activity</option>
+            <option value="reward">Rewards only</option>
+            <option value="redemption">Redemptions only</option>
+            <option value="other">Other transfers</option>
+          </select>
+        </label>
+        <button id="clearFilters" class="clear-button" type="button">Reset filter</button>
+      </div>
+
+      <div class="activity-summary" aria-live="polite">
+        <span id="activityStatus"><span class="spinner"></span>Loading Base Chili activity…</span>
+        <span id="activityUpdated">Not updated yet</span>
+      </div>
+
+      <div class="table-shell">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Activity</th>
+              <th>Source Wallet</th>
+              <th>Token From</th>
+              <th>Store</th>
+              <th>Amount (CHI)</th>
+              <th>Transaction</th>
+            </tr>
+          </thead>
+          <tbody id="activityRows">
+            <tr><td colspan="7" class="empty-state"><span class="spinner"></span>Loading live Chili rewards and redemptions…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span id="transferSource">Transfer source: connecting…</span>
+        <a id="baseTransactionsLink" href="https://basescan.org/token/0x25Ec4c3eF2A21d178922Fb02c7F92111852165E8#transactions" target="_blank" rel="noopener noreferrer">Open BaseScan activity ↗</a>
+      </div>
+    </section>
+
+    <section id="data-notes" class="notes-section page-shell">
+      <div class="note-card primary-note">
+        <div class="note-icon">i</div>
+        <div>
+          <h2>How this tracker classifies activity</h2>
+          <p>The tracker follows the current program rules for the tracked America’s Food Basket wallet. A transfer of exactly <strong>5 CHI</strong> into the wallet is classified as a reward, and a transfer of exactly <strong>3 CHI</strong> out of the wallet is classified as a redemption.</p>
+        </div>
+      </div>
+
+      <div class="note-grid">
+        <article>
+          <h3>Tracked store</h3>
+          <p>This dashboard is dedicated to one public key: <strong id="noteWalletShort">0x7d6e…a05e</strong>. It is intended to show wallet-level activity for America’s Food Basket Rockaway.</p>
+        </article>
+        <article>
+          <h3>Live source</h3>
+          <p>Data is requested from public Base indexers and refreshed every 20 seconds. Explorer indexing can lag the newest blockchain activity.</p>
+        </article>
+        <article>
+          <h3>Classification limit</h3>
+          <p>Amount-based classification reflects the program rule but does not independently verify the related retail purchase, shopper identity, or business purpose of a transfer.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="page-shell footer-inner">
+      <div class="footer-brand">
+        <img src="/assets/americas-food-basket-logo.png" alt="America's Food Basket" />
+        <div>
+          <span>Chili Rewards Tracker</span>
+          <small>A registered GFT Rewards Distributor</small>
+        </div>
+      </div>
+      <div class="footer-meta">
+        <span><i class="status-dot"></i>Automatic refresh every 20 seconds</span>
+        <span>Base public on-chain data</span>
+        <span>Wallet-level rewards-program reporting</span>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
