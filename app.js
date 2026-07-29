@@ -235,14 +235,14 @@ function renderActivity(data) {
 
   if (!totalLoaded) {
     elements.activityStatus.textContent = 'No Base CHI transaction records were returned for the tracked store wallet.';
-    elements.activityRows.innerHTML = '<tr><td colspan="7" class="empty-state">No Chili rewards or redemption activity was returned for the tracked wallet. Use “Refresh activity” to retry or open BaseScan.</td></tr>';
+    elements.activityRows.innerHTML = '<tr><td colspan="5" class="empty-state">No Chili rewards or redemption activity was returned for the tracked wallet. Use “Refresh activity” to retry or open BaseScan.</td></tr>';
     return;
   }
 
   if (!transfers.length) {
     const message = 'No loaded Chili activity matched the selected filter.';
     elements.activityStatus.textContent = message;
-    elements.activityRows.innerHTML = `<tr><td colspan="7" class="empty-state">${escapeHtml(message)}</td></tr>`;
+    elements.activityRows.innerHTML = `<tr><td colspan="5" class="empty-state">${escapeHtml(message)}</td></tr>`;
     return;
   }
 
@@ -251,20 +251,15 @@ function renderActivity(data) {
 
   elements.activityRows.innerHTML = transfers.map(item => {
     const tx = item.transactionHash || '';
-    const from = item.from || '';
-    const sourceWallet = item.sourceWallet || item.transactionInitiator || from;
+    const sourceWallet = item.sourceWallet || item.transactionInitiator || item.from || '';
     const txLink = item.transactionUrl || `https://basescan.org/tx/${tx}`;
     const sourceLink = item.sourceWalletUrl || `https://basescan.org/address/${sourceWallet}`;
-    const fromLink = item.fromUrl || `https://basescan.org/address/${from}`;
-    const label = item.activityType || item.event || 'Other';
     const storeCell = renderStoreCell(trackedStore);
 
     return `
       <tr>
         <td title="${escapeHtml(item.timestamp || '')}">${escapeHtml(relativeTime(item.timestamp))}</td>
-        <td><span class="activity-tag ${activityClass(label)}">${escapeHtml(label)}</span></td>
         <td><a class="mono-link" href="${escapeHtml(sourceLink)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(sourceWallet)}">${escapeHtml(shortHash(sourceWallet))}</a></td>
-        <td><a class="mono-link" href="${escapeHtml(fromLink)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(from)}">${escapeHtml(shortHash(from))}</a></td>
         <td>${storeCell}</td>
         <td class="amount-cell">${escapeHtml(formatDecimalString(item.amount))}</td>
         <td><a class="mono-link" href="${escapeHtml(txLink)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tx)}">${escapeHtml(shortHash(tx, 9, 6))} ↗</a></td>
@@ -319,7 +314,7 @@ async function loadLiveData({ manual = false } = {}) {
     elements.lastUpdated.textContent = error instanceof Error ? error.message : 'Unknown refresh error';
     if (elements.activityStatus) elements.activityStatus.textContent = 'Chili activity refresh failed.';
     if (!state.data && elements.activityRows) {
-      elements.activityRows.innerHTML = '<tr><td colspan="7" class="empty-state">The live endpoint could not be reached. Vercel will retry on the next automatic refresh.</td></tr>';
+      elements.activityRows.innerHTML = '<tr><td colspan="5" class="empty-state">The live endpoint could not be reached. Vercel will retry on the next automatic refresh.</td></tr>';
     }
     if (manual) setRefreshButtons({ error: true });
   } finally {

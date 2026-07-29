@@ -87,7 +87,7 @@
           </div>
           <span class="metric-label">Rewards Issued</span>
           <strong id="rewardTransactions" class="metric-number">—</strong>
-          <span class="metric-sub">5 CHI reward transactions into this store wallet</span>
+          <span class="metric-sub">Every reward distribution transaction into this store wallet</span>
         </article>
 
         <article class="metric-card reward-chi-card">
@@ -97,7 +97,7 @@
           </div>
           <span class="metric-label">Chilis Rewarded</span>
           <strong id="rewardChiIssued" class="metric-number">—</strong>
-          <span class="metric-sub">CHI delivered into this store wallet</span>
+          <span class="metric-sub">Cumulative CHI delivered into this store wallet</span>
         </article>
 
         <article class="metric-card shopper-wallet-card">
@@ -108,26 +108,6 @@
           <span class="metric-label">Shopper Wallets</span>
           <strong id="shopperWallets" class="metric-number">—</strong>
           <span class="metric-sub">Every unique counterparty wallet tied to this store</span>
-        </article>
-
-        <article class="metric-card redemption-count-card">
-          <div class="metric-topline">
-            <span class="metric-icon redemption-icon">3</span>
-            <span class="metric-tag">Live</span>
-          </div>
-          <span class="metric-label">Redemptions Completed</span>
-          <strong id="redemptionTransactions" class="metric-number">—</strong>
-          <span class="metric-sub">3 CHI redemption transactions from this store wallet</span>
-        </article>
-
-        <article class="metric-card redeemed-chi-card">
-          <div class="metric-topline">
-            <span class="metric-icon check-icon">✓</span>
-            <span class="metric-tag">Live</span>
-          </div>
-          <span class="metric-label">Total Chilis Redeemed</span>
-          <strong id="chiRedeemed" class="metric-number">—</strong>
-          <span class="metric-sub">Total CHI sent from this store in completed redemptions</span>
         </article>
       </div>
     </section>
@@ -182,16 +162,14 @@
           <thead>
             <tr>
               <th>Time</th>
-              <th>Activity</th>
               <th>Source Wallet</th>
-              <th>Token From</th>
               <th>Store</th>
               <th>Amount (CHI)</th>
               <th>Transaction</th>
             </tr>
           </thead>
           <tbody id="activityRows">
-            <tr><td colspan="7" class="empty-state"><span class="spinner"></span>Loading live Chili rewards and redemptions…</td></tr>
+            <tr><td colspan="5" class="empty-state"><span class="spinner"></span>Loading live Chili rewards and redemptions…</td></tr>
           </tbody>
         </table>
       </div>
@@ -207,7 +185,7 @@
         <div class="note-icon">i</div>
         <div>
           <h2>How this tracker classifies activity</h2>
-          <p>The tracker follows the current program rules for the tracked America’s Food Basket wallet. A transfer of exactly <strong>5 CHI</strong> into the wallet is classified as a reward, and a transfer of exactly <strong>3 CHI</strong> out of the wallet is classified as a redemption.</p>
+          <p>The tracker follows the current program rules for the tracked America’s Food Basket wallet. A transfer of exactly <strong>5 CHI</strong> into the wallet is classified as a reward.</p>
         </div>
       </div>
 

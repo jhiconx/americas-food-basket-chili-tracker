@@ -323,7 +323,7 @@ export default async function handler(req, res) {
       signerSourceUrl: contractTxData?.sourceUrl || null,
       explorerUrl: BASESCAN_TX_URL
     },
-    note: 'A 5 CHI Base transfer into the tracked America\'s Food Basket wallet is classified as a reward. A 3 CHI Base transfer out of that wallet is classified as a redemption. Shopper wallets count unique counterparty addresses tied to the tracked wallet, excluding the tracked wallet, the CHI token contract, and the zero address.',
+    note: 'A 5 CHI Base transfer into the tracked America\'s Food Basket wallet is classified as a reward. Shopper wallets count unique counterparty addresses tied to the tracked wallet, excluding the tracked wallet, the CHI token contract, and the zero address.',
     warnings
   });
 }
