@@ -111,6 +111,7 @@ async function fetchTokenTransfers(offset = TRANSFER_FETCH_LIMIT) {
     module: 'account',
     action: 'tokentx',
     contractaddress: BASE_TOKEN,
+    address: TRACKED_STORE.wallet,
     page: '1',
     offset,
     sort: 'desc'
@@ -215,20 +216,40 @@ function enrichTransfersWithTransactions(transfers, txInfo) {
 
 function calculateMetrics(transfers) {
   let rewardTransactions = 0;
+  let rewardChiIssued = 0;
   let redemptionTransactions = 0;
+  let chiRedeemed = 0;
   let otherTransactions = 0;
+  const uniqueShopperWallets = new Set();
 
   for (const transfer of transfers) {
-    if (transfer.activityType === 'Reward') rewardTransactions += 1;
-    else if (transfer.activityType === 'Redemption') redemptionTransactions += 1;
-    else otherTransactions += 1;
+    if (transfer.activityType === 'Reward') {
+      rewardTransactions += 1;
+      rewardChiIssued += Number(transfer.amount || 0);
+    } else if (transfer.activityType === 'Redemption') {
+      redemptionTransactions += 1;
+      chiRedeemed += Number(transfer.amount || 0);
+    } else {
+      otherTransactions += 1;
+    }
+
+    const counterparty = transfer.from === TRACKED_STORE.wallet ? transfer.to : transfer.from;
+    if (
+      counterparty &&
+      counterparty !== TRACKED_STORE.wallet &&
+      counterparty !== ZERO_ADDRESS &&
+      counterparty !== BASE_TOKEN.toLowerCase()
+    ) {
+      uniqueShopperWallets.add(counterparty);
+    }
   }
 
   return {
     rewardTransactions,
-    rewardChiIssued: rewardTransactions * Number(REWARD_CHI_AMOUNT),
+    rewardChiIssued,
+    shopperWallets: uniqueShopperWallets.size,
     redemptionTransactions,
-    chiRedeemed: redemptionTransactions * Number(REDEMPTION_CHI_AMOUNT),
+    chiRedeemed,
     otherTransactions,
     totalTransactions: transfers.length
   };
@@ -270,7 +291,7 @@ export default async function handler(req, res) {
   const metrics = calculateMetrics(allTransfers);
 
   return res.status(200).json({
-    ok: Boolean(allTransfers.length),
+    ok: Boolean(transferData),
     fetchedAt,
     refreshSeconds: 20,
     contract: {
@@ -302,7 +323,7 @@ export default async function handler(req, res) {
       signerSourceUrl: contractTxData?.sourceUrl || null,
       explorerUrl: BASESCAN_TX_URL
     },
-    note: 'A 5 CHI Base transfer into the tracked America\'s Food Basket wallet is classified as a reward. A 3 CHI Base transfer out of that wallet is classified as a redemption.',
+    note: 'A 5 CHI Base transfer into the tracked America\'s Food Basket wallet is classified as a reward. A 3 CHI Base transfer out of that wallet is classified as a redemption. Shopper wallets count unique counterparty addresses tied to the tracked wallet, excluding the tracked wallet, the CHI token contract, and the zero address.',
     warnings
   });
 }

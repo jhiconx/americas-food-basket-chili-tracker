@@ -15,6 +15,7 @@ const elements = {
   lastUpdated: document.querySelector('#lastUpdated'),
   rewardTransactions: document.querySelector('#rewardTransactions'),
   rewardChiIssued: document.querySelector('#rewardChiIssued'),
+  shopperWallets: document.querySelector('#shopperWallets'),
   redemptionTransactions: document.querySelector('#redemptionTransactions'),
   chiRedeemed: document.querySelector('#chiRedeemed'),
   topRefresh: document.querySelector('#topRefreshButton'),
@@ -34,6 +35,8 @@ const elements = {
   activityStoreName: document.querySelector('#activityStoreName'),
   trackedStoreName: document.querySelector('#trackedStoreName'),
   trackedWalletLink: document.querySelector('#trackedWalletLink'),
+  walletStripStoreName: document.querySelector('#walletStripStoreName'),
+  programWalletLink: document.querySelector('#programWalletLink'),
   programWalletShort: document.querySelector('#programWalletShort'),
   noteWalletShort: document.querySelector('#noteWalletShort')
 };
@@ -145,7 +148,7 @@ function renderTrackedStore(data) {
   const shortWallet = trackedStore.shortWallet || shortHash(wallet, 7, 5);
   const link = trackedStore.explorerUrl || (wallet ? `https://basescan.org/address/${wallet}` : '#');
 
-  [elements.heroStoreName, elements.brandCardStoreName, elements.activityStoreName, elements.trackedStoreName].forEach(node => {
+  [elements.heroStoreName, elements.brandCardStoreName, elements.activityStoreName, elements.trackedStoreName, elements.walletStripStoreName].forEach(node => {
     if (node) node.textContent = storeName;
   });
   if (elements.brandCardWalletLabel) elements.brandCardWalletLabel.textContent = wallet || 'Wallet unavailable';
@@ -154,6 +157,7 @@ function renderTrackedStore(data) {
     elements.trackedWalletLink.href = link;
   }
   if (elements.programWalletShort) elements.programWalletShort.textContent = shortWallet;
+  if (elements.programWalletLink) elements.programWalletLink.href = link;
   if (elements.noteWalletShort) elements.noteWalletShort.textContent = shortWallet;
 }
 
@@ -161,6 +165,7 @@ function renderMetrics(data) {
   const metrics = data.metrics || {};
   elements.rewardTransactions.textContent = formatNumber(metrics.rewardTransactions);
   elements.rewardChiIssued.textContent = formatNumber(metrics.rewardChiIssued);
+  if (elements.shopperWallets) elements.shopperWallets.textContent = formatNumber(metrics.shopperWallets);
   elements.redemptionTransactions.textContent = formatNumber(metrics.redemptionTransactions);
   elements.chiRedeemed.textContent = formatNumber(metrics.chiRedeemed);
 }

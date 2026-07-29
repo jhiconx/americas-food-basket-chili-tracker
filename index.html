@@ -42,7 +42,7 @@
         <div class="hero-copy">
           <div class="eyebrow"><span class="eyebrow-line"></span>AMERICA'S FOOD BASKET STORE VISIBILITY</div>
           <h1>Chili Rewards<br /><span>Tracker</span></h1>
-          <p>Live visibility into Chili rewards issued and redemptions completed for <strong id="heroStoreName">America's Food Basket Rockaway</strong> on Base.</p>
+          <p>Live visibility into Chili rewards, unique shopper wallets, and redemptions completed for <strong id="heroStoreName">America's Food Basket Rockaway</strong> on Base.</p>
           <div class="hero-status">
             <span id="connectionStatus" class="connection-pill loading">Connecting to live Base data…</span>
             <span id="lastUpdated">Not updated yet</span>
@@ -100,10 +100,20 @@
           <span class="metric-sub">CHI delivered into this store wallet</span>
         </article>
 
+        <article class="metric-card shopper-wallet-card">
+          <div class="metric-topline">
+            <span class="metric-icon wallet-icon">●</span>
+            <span class="metric-tag">Unique</span>
+          </div>
+          <span class="metric-label">Shopper Wallets</span>
+          <strong id="shopperWallets" class="metric-number">—</strong>
+          <span class="metric-sub">Every unique counterparty wallet tied to this store</span>
+        </article>
+
         <article class="metric-card redemption-count-card">
           <div class="metric-topline">
             <span class="metric-icon redemption-icon">3</span>
-            <span class="metric-tag">Redemptions</span>
+            <span class="metric-tag">Live</span>
           </div>
           <span class="metric-label">Redemptions Completed</span>
           <strong id="redemptionTransactions" class="metric-number">—</strong>
@@ -113,29 +123,25 @@
         <article class="metric-card redeemed-chi-card">
           <div class="metric-topline">
             <span class="metric-icon check-icon">✓</span>
-            <span class="metric-tag">Redeemed</span>
+            <span class="metric-tag">Live</span>
           </div>
-          <span class="metric-label">Chilis Redeemed</span>
+          <span class="metric-label">Total Chilis Redeemed</span>
           <strong id="chiRedeemed" class="metric-number">—</strong>
-          <span class="metric-sub">CHI used by this store to complete redemptions</span>
+          <span class="metric-sub">Total CHI sent from this store in completed redemptions</span>
         </article>
       </div>
     </section>
 
-    <section class="program-strip page-shell" aria-label="Program rules">
-      <div class="program-rule">
-        <span class="rule-number">5</span>
-        <div><strong>CHI reward</strong><span>issued into the store wallet per qualifying trip</span></div>
+    <section class="wallet-strip page-shell" aria-label="Tracked store wallet">
+      <div class="wallet-strip-copy">
+        <span class="wallet-strip-label">Tracked wallet</span>
+        <strong id="walletStripStoreName">America's Food Basket Rockaway</strong>
+        <span>All dashboard totals and unique shopper-wallet counts are tied to this public key.</span>
       </div>
-      <div class="rule-arrow" aria-hidden="true">→</div>
-      <div class="program-rule">
-        <span class="rule-number redemption">3</span>
-        <div><strong>CHI redemption</strong><span>sent from the store wallet per completed redemption</span></div>
-      </div>
-      <div class="program-source">
-        <span>Tracked wallet</span>
-        <strong id="programWalletShort">0x7d6e…a05e</strong>
-      </div>
+      <a id="programWalletLink" class="wallet-strip-link" href="https://basescan.org/address/0x7d6eB946664f1dEFA40c9582819e251ae994a05e" target="_blank" rel="noopener noreferrer">
+        <span id="programWalletShort">0x7d6e…a05e</span>
+        <small>Open wallet on BaseScan ↗</small>
+      </a>
     </section>
 
     <section id="activity" class="activity-section page-shell">
@@ -143,7 +149,7 @@
         <div>
           <span class="section-kicker">LIVE BASE ACTIVITY</span>
           <h2>Chili Rewards and Redemptions</h2>
-          <p>Live activity for <strong id="activityStoreName">America's Food Basket Rockaway</strong>. The tracker is keyed to the public wallet below and shows the latest reward and redemption transactions tied to that store.</p>
+          <p>Live activity for <strong id="activityStoreName">America's Food Basket Rockaway</strong>. The tracker is keyed to the public wallet below and shows live reward, shopper-wallet, and redemption activity tied to that store.</p>
         </div>
         <button id="activityRefreshButton" class="refresh-button secondary" type="button">↻ Refresh activity</button>
       </div>
