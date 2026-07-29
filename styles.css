@@ -502,6 +502,141 @@ button { color: inherit; }
   transform: translateY(-1px);
 }
 
+
+.campaigns-section { padding-top: 42px; }
+.campaign-carousel-shell {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 14px 36px rgba(20, 107, 54, 0.06);
+}
+.campaign-carousel {
+  overflow: hidden;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fbfefc, #f5fbf7);
+  mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+}
+.campaign-track {
+  display: flex;
+  gap: 18px;
+  width: max-content;
+  padding: 6px 0;
+  animation: campaignScroll 50s linear infinite;
+}
+.campaign-carousel:hover .campaign-track { animation-play-state: paused; }
+@keyframes campaignScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-50% - 9px)); }
+}
+.campaign-card {
+  width: 250px;
+  flex: 0 0 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 10px 24px rgba(20, 107, 54, 0.06);
+}
+.campaign-media {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 160px;
+  padding: 14px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.campaign-media::after {
+  content: '';
+  position: absolute;
+  right: -18px;
+  bottom: -26px;
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.26);
+}
+.campaign-media.libbys { background: linear-gradient(135deg, #f4d8b7, #df9d58); }
+.campaign-media.carnation { background: linear-gradient(135deg, #f6edc9, #d8b85d); }
+.campaign-media.goya { background: linear-gradient(135deg, #d9e8fb, #7bb2ee); }
+.campaign-media.coke { background: linear-gradient(135deg, #f1d8d1, #d96d55); }
+.campaign-media.cream { background: linear-gradient(135deg, #eff4fa, #bdd1ea); }
+.campaign-badge {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: rgba(24,52,38,.92);
+  background: rgba(255,255,255,.78);
+  font-size: 11px;
+  font-weight: 860;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.campaign-packshot {
+  position: relative;
+  z-index: 1;
+  width: 92px;
+  height: 118px;
+  align-self: flex-end;
+  border-radius: 18px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.12);
+}
+.campaign-packshot::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 18px;
+  bottom: 18px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(20,107,54,.12), rgba(20,107,54,.02));
+}
+.campaign-pack-line {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(20,107,54,.18);
+}
+.campaign-pack-line.top { top: 26px; }
+.campaign-pack-line.bottom { top: 46px; }
+.campaign-copy {
+  display: grid;
+  gap: 6px;
+}
+.campaign-discount {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: var(--brand-green-dark);
+  background: var(--brand-green-soft);
+  font-size: 11px;
+  font-weight: 840;
+}
+.campaign-copy strong {
+  color: var(--brand-green-dark);
+  font-size: 19px;
+  line-height: 1.18;
+}
+.campaign-sku {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .activity-section {
   margin-top: 48px;
   padding: 32px;
@@ -673,6 +808,7 @@ tbody tr:hover td { background: #fbfefc; }
 }
 
 @media (max-width: 900px) {
+  .campaign-card { width: 220px; flex-basis: 220px; }
   .page-shell { width: min(100% - 32px, 1440px); }
   .site-header { min-height: 76px; padding: 10px 16px; }
   .brand-lockup { align-items: flex-start; flex-wrap: wrap; }
@@ -692,6 +828,9 @@ tbody tr:hover td { background: #fbfefc; }
 }
 
 @media (max-width: 620px) {
+  .campaigns-section { padding-top: 30px; }
+  .campaign-carousel-shell { padding: 12px; border-radius: 18px; }
+  .campaign-card { width: 200px; flex-basis: 200px; }
   .page-shell { width: min(100% - 22px, 1440px); }
   .base-link { padding: 9px 10px; font-size: 10px; }
   .hero-wrap { padding-top: 18px; }

@@ -1,4 +1,4 @@
-const TRACKER_BUILD = 'v5-null-safe';
+const TRACKER_BUILD = 'v6-campaign-carousel';
 const API_URL = '/api/live';
 const BASESCAN_TX_URL = 'https://basescan.org/tokentxns?a=0x7d6eb946664f1defa40c9582819e251ae994a05e&p=1';
 const REFRESH_MS = 20_000;
@@ -10,6 +10,45 @@ const state = {
   feedbackTimer: null,
   activityType: 'all'
 };
+
+
+const LIVE_CAMPAIGNS = [
+  {
+    theme: 'libbys',
+    badge: "Libby's",
+    title: 'Chicken Vienna Sausage',
+    sku: '4.6 oz can · updated 05/26 at noon',
+    discount: '$0.25'
+  },
+  {
+    theme: 'carnation',
+    badge: 'Carnation',
+    title: 'Evaporated Milk',
+    sku: '12 oz original · 12 oz low fat 2%',
+    discount: '$0.50'
+  },
+  {
+    theme: 'goya',
+    badge: 'Goya',
+    title: 'Coconut Water',
+    sku: '16.9 fl oz tetra · 11.8 fl oz can · 17.6 fl oz can · unsweetened 11.8 oz',
+    discount: '$0.50'
+  },
+  {
+    theme: 'coke',
+    badge: 'Coca-Cola',
+    title: '2L Variety',
+    sku: 'Original Taste · Diet Coke · Cherry Coca-Cola · Coca-Cola Zero Sugar',
+    discount: '$0.75'
+  },
+  {
+    theme: 'cream',
+    badge: 'Cream-O-Land',
+    title: 'Milk',
+    sku: 'Multiple varieties · 1 gallon',
+    discount: '$1.00'
+  }
+];
 
 const elements = {
   connectionStatus: document.querySelector('#connectionStatus'),
@@ -38,8 +77,32 @@ const elements = {
   walletStripStoreName: document.querySelector('#walletStripStoreName'),
   programWalletLink: document.querySelector('#programWalletLink'),
   programWalletShort: document.querySelector('#programWalletShort'),
-  noteWalletShort: document.querySelector('#noteWalletShort')
+  noteWalletShort: document.querySelector('#noteWalletShort'),
+  campaignTrack: document.querySelector('#campaignTrack')
 };
+
+
+function renderCampaigns() {
+  if (!elements.campaignTrack) return;
+
+  const items = [...LIVE_CAMPAIGNS, ...LIVE_CAMPAIGNS];
+  elements.campaignTrack.innerHTML = items.map((item, index) => `
+    <article class="campaign-card ${escapeHtml(item.theme)}" aria-label="${escapeHtml(item.badge)} ${escapeHtml(item.title)} campaign card ${index + 1}">
+      <div class="campaign-media ${escapeHtml(item.theme)}">
+        <span class="campaign-badge">${escapeHtml(item.badge)}</span>
+        <div class="campaign-packshot" aria-hidden="true">
+          <span class="campaign-pack-line top"></span>
+          <span class="campaign-pack-line bottom"></span>
+        </div>
+      </div>
+      <div class="campaign-copy">
+        <span class="campaign-discount">${escapeHtml(item.discount)} off</span>
+        <strong>${escapeHtml(item.title)}</strong>
+        <span class="campaign-sku">SKU: ${escapeHtml(item.sku)}</span>
+      </div>
+    </article>
+  `).join('');
+}
 
 function formatNumber(value) {
   const number = Number(value);
@@ -353,5 +416,6 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') loadLiveData();
 });
 
+renderCampaigns();
 loadLiveData();
 scheduleRefresh();

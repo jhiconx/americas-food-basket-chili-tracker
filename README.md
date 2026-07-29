@@ -48,3 +48,10 @@ Metrics are wallet-scoped, not network-wide.
 - Makes all live-status DOM updates null-safe.
 - Removes obsolete redemption element references.
 - Adds cache-busting query strings to CSS and JavaScript assets.
+
+
+## New in V6
+
+- Adds a **Live Campaigns** carousel above the activity table
+- Shows campaign items scrolling from right to left
+- Displays each product card with a visual tile and SKU text underneath
