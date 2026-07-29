@@ -41,3 +41,10 @@ A Vercel-ready Chili rewards tracker branded for **America's Food Basket** and c
 The API reads wallet-specific Base CHI transfer history from the public Base Blockscout indexer. The current token balance is read from Blockscout with a direct Base mainnet `balanceOf` RPC fallback. BaseScan links remain available in the dashboard for public verification.
 
 Metrics are wallet-scoped, not network-wide.
+
+
+## V5 stability fix
+
+- Makes all live-status DOM updates null-safe.
+- Removes obsolete redemption element references.
+- Adds cache-busting query strings to CSS and JavaScript assets.

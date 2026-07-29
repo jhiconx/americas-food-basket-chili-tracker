@@ -1,3 +1,4 @@
+const TRACKER_BUILD = 'v5-null-safe';
 const API_URL = '/api/live';
 const BASESCAN_TX_URL = 'https://basescan.org/tokentxns?a=0x7d6eb946664f1defa40c9582819e251ae994a05e&p=1';
 const REFRESH_MS = 20_000;
@@ -17,8 +18,6 @@ const elements = {
   rewardChiIssued: document.querySelector('#rewardChiIssued'),
   shopperWallets: document.querySelector('#shopperWallets'),
   storeChiBalance: document.querySelector('#storeChiBalance'),
-  redemptionTransactions: document.querySelector('#redemptionTransactions'),
-  chiRedeemed: document.querySelector('#chiRedeemed'),
   topRefresh: document.querySelector('#topRefreshButton'),
   activityRefresh: document.querySelector('#activityRefreshButton'),
   refreshFeedback: document.querySelector('#refreshFeedback'),
@@ -168,8 +167,6 @@ function renderMetrics(data) {
   if (elements.rewardChiIssued) elements.rewardChiIssued.textContent = formatNumber(metrics.rewardChiIssued);
   if (elements.shopperWallets) elements.shopperWallets.textContent = formatNumber(metrics.shopperWallets);
   if (elements.storeChiBalance) elements.storeChiBalance.textContent = formatDecimalString(metrics.storeChiBalance);
-  if (elements.redemptionTransactions) elements.redemptionTransactions.textContent = formatNumber(metrics.redemptionTransactions);
-  if (elements.chiRedeemed) elements.chiRedeemed.textContent = formatNumber(metrics.chiRedeemed);
 }
 
 function allTransferRecords(data) {
@@ -236,20 +233,20 @@ function renderActivity(data) {
   }
 
   if (!totalLoaded) {
-    elements.activityStatus.textContent = 'No Base CHI transaction records were returned for the tracked store wallet.';
+    if (elements.activityStatus) elements.activityStatus.textContent = 'No Base CHI transaction records were returned for the tracked store wallet.';
     elements.activityRows.innerHTML = '<tr><td colspan="5" class="empty-state">No Chili reward activity was returned for the tracked wallet. Use “Refresh activity” to retry or open BaseScan.</td></tr>';
     return;
   }
 
   if (!transfers.length) {
     const message = 'No loaded Chili activity matched the selected filter.';
-    elements.activityStatus.textContent = message;
+    if (elements.activityStatus) elements.activityStatus.textContent = message;
     elements.activityRows.innerHTML = `<tr><td colspan="5" class="empty-state">${escapeHtml(message)}</td></tr>`;
     return;
   }
 
   const typeText = state.activityType === 'all' ? '' : ` · ${state.activityType}`;
-  elements.activityStatus.textContent = `Showing ${formatNumber(transfers.length)} latest loaded rows${typeText}. Metrics are calculated from ${formatNumber(indexedTotal)}${capped ? '+' : ''} indexed Base transfers for the tracked store wallet.`;
+  if (elements.activityStatus) elements.activityStatus.textContent = `Showing ${formatNumber(transfers.length)} latest loaded rows${typeText}. Metrics are calculated from ${formatNumber(indexedTotal)}${capped ? '+' : ''} indexed Base transfers for the tracked store wallet.`;
 
   elements.activityRows.innerHTML = transfers.map(item => {
     const tx = item.transactionHash || '';
@@ -280,9 +277,11 @@ function renderStatus(data) {
   }
 
   const fetched = normalizeTimestamp(data.fetchedAt);
-  elements.lastUpdated.textContent = fetched
-    ? `Updated ${fetched.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`
-    : 'Update time unavailable';
+  if (elements.lastUpdated) {
+    elements.lastUpdated.textContent = fetched
+      ? `Updated ${fetched.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`
+      : 'Update time unavailable';
+  }
 }
 
 async function loadLiveData({ manual = false } = {}) {
@@ -313,7 +312,7 @@ async function loadLiveData({ manual = false } = {}) {
     if (manual) setRefreshButtons({ success: true });
   } catch (error) {
     setConnection('bad', 'Live Base connection failed');
-    elements.lastUpdated.textContent = error instanceof Error ? error.message : 'Unknown refresh error';
+    if (elements.lastUpdated) elements.lastUpdated.textContent = error instanceof Error ? error.message : 'Unknown refresh error';
     if (elements.activityStatus) elements.activityStatus.textContent = 'Chili activity refresh failed.';
     if (!state.data && elements.activityRows) {
       elements.activityRows.innerHTML = '<tr><td colspan="5" class="empty-state">The live endpoint could not be reached. Vercel will retry on the next automatic refresh.</td></tr>';
