@@ -1,5 +1,5 @@
 const API_URL = '/api/live';
-const BASESCAN_TX_URL = 'https://basescan.org/token/0x25Ec4c3eF2A21d178922Fb02c7F92111852165E8#transactions';
+const BASESCAN_TX_URL = 'https://basescan.org/tokentxns?a=0x7d6eb946664f1defa40c9582819e251ae994a05e&p=1';
 const REFRESH_MS = 20_000;
 
 const state = {
@@ -16,6 +16,7 @@ const elements = {
   rewardTransactions: document.querySelector('#rewardTransactions'),
   rewardChiIssued: document.querySelector('#rewardChiIssued'),
   shopperWallets: document.querySelector('#shopperWallets'),
+  storeChiBalance: document.querySelector('#storeChiBalance'),
   redemptionTransactions: document.querySelector('#redemptionTransactions'),
   chiRedeemed: document.querySelector('#chiRedeemed'),
   topRefresh: document.querySelector('#topRefreshButton'),
@@ -116,7 +117,7 @@ function setRefreshButtons({ loading = false, success = false, error = false } =
   if (loading) {
     if (elements.topRefresh) elements.topRefresh.textContent = '↻ Refreshing…';
     if (elements.activityRefresh) elements.activityRefresh.textContent = '↻ Refreshing…';
-    if (elements.refreshFeedback) elements.refreshFeedback.textContent = 'Requesting current Base reward and redemption activity.';
+    if (elements.refreshFeedback) elements.refreshFeedback.textContent = 'Requesting current Base reward activity and wallet balance.';
     return;
   }
 
@@ -163,11 +164,12 @@ function renderTrackedStore(data) {
 
 function renderMetrics(data) {
   const metrics = data.metrics || {};
-  elements.rewardTransactions.textContent = formatNumber(metrics.rewardTransactions);
-  elements.rewardChiIssued.textContent = formatNumber(metrics.rewardChiIssued);
+  if (elements.rewardTransactions) elements.rewardTransactions.textContent = formatNumber(metrics.rewardTransactions);
+  if (elements.rewardChiIssued) elements.rewardChiIssued.textContent = formatNumber(metrics.rewardChiIssued);
   if (elements.shopperWallets) elements.shopperWallets.textContent = formatNumber(metrics.shopperWallets);
-  elements.redemptionTransactions.textContent = formatNumber(metrics.redemptionTransactions);
-  elements.chiRedeemed.textContent = formatNumber(metrics.chiRedeemed);
+  if (elements.storeChiBalance) elements.storeChiBalance.textContent = formatDecimalString(metrics.storeChiBalance);
+  if (elements.redemptionTransactions) elements.redemptionTransactions.textContent = formatNumber(metrics.redemptionTransactions);
+  if (elements.chiRedeemed) elements.chiRedeemed.textContent = formatNumber(metrics.chiRedeemed);
 }
 
 function allTransferRecords(data) {
@@ -235,7 +237,7 @@ function renderActivity(data) {
 
   if (!totalLoaded) {
     elements.activityStatus.textContent = 'No Base CHI transaction records were returned for the tracked store wallet.';
-    elements.activityRows.innerHTML = '<tr><td colspan="5" class="empty-state">No Chili rewards or redemption activity was returned for the tracked wallet. Use “Refresh activity” to retry or open BaseScan.</td></tr>';
+    elements.activityRows.innerHTML = '<tr><td colspan="5" class="empty-state">No Chili reward activity was returned for the tracked wallet. Use “Refresh activity” to retry or open BaseScan.</td></tr>';
     return;
   }
 
@@ -289,7 +291,7 @@ async function loadLiveData({ manual = false } = {}) {
 
   if (manual) setRefreshButtons({ loading: true });
   if (manual || !state.data) setConnection('loading', 'Refreshing live Base data…');
-  if (elements.activityStatus && manual) elements.activityStatus.textContent = 'Refreshing Chili rewards and redemption activity…';
+  if (elements.activityStatus && manual) elements.activityStatus.textContent = 'Refreshing Chili reward activity and wallet balance…';
 
   try {
     const params = new URLSearchParams({ t: String(Date.now()) });

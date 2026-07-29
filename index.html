@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#146b36" />
-  <meta name="description" content="America's Food Basket Chili Rewards Tracker for live Chili rewards and redemption activity on Base." />
+  <meta name="description" content="America's Food Basket Chili Rewards Tracker for live Chili reward distribution activity and wallet balance on Base." />
   <title>America's Food Basket — Chili Rewards Tracker</title>
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
@@ -26,7 +26,7 @@
 
     <nav class="desktop-nav" aria-label="Primary navigation">
       <a class="active" href="#dashboard">Dashboard</a>
-      <a href="#activity">Rewards &amp; Redemptions</a>
+      <a href="#activity">Reward Activity</a>
       <a href="#data-notes">Data Notes</a>
     </nav>
 
@@ -42,7 +42,7 @@
         <div class="hero-copy">
           <div class="eyebrow"><span class="eyebrow-line"></span>AMERICA'S FOOD BASKET STORE VISIBILITY</div>
           <h1>Chili Rewards<br /><span>Tracker</span></h1>
-          <p>Live visibility into Chili rewards, unique shopper wallets, and redemptions completed for <strong id="heroStoreName">America's Food Basket Rockaway</strong> on Base.</p>
+          <p>Live visibility into Chili rewards issued, unique shopper wallets, and the current CHI balance for <strong id="heroStoreName">America's Food Basket Rockaway</strong> on Base.</p>
           <div class="hero-status">
             <span id="connectionStatus" class="connection-pill loading">Connecting to live Base data…</span>
             <span id="lastUpdated">Not updated yet</span>
@@ -69,11 +69,11 @@
       </div>
     </section>
 
-    <section class="metrics-section page-shell" aria-label="America's Food Basket Chili rewards and redemption metrics">
+    <section class="metrics-section page-shell" aria-label="America's Food Basket Chili reward metrics">
       <div class="section-heading compact">
         <div>
           <span class="section-kicker">LIVE STORE TOTALS</span>
-          <h2>Rewards and redemption activity</h2>
+          <h2>Reward distribution activity</h2>
         </div>
         <button id="topRefreshButton" class="refresh-button" type="button" aria-describedby="refreshFeedback">↻ Refresh data</button>
       </div>
@@ -87,7 +87,7 @@
           </div>
           <span class="metric-label">Rewards Issued</span>
           <strong id="rewardTransactions" class="metric-number">—</strong>
-          <span class="metric-sub">Every reward distribution transaction into this store wallet</span>
+          <span class="metric-sub">Every exact 5 CHI transfer sent from this store wallet</span>
         </article>
 
         <article class="metric-card reward-chi-card">
@@ -97,7 +97,7 @@
           </div>
           <span class="metric-label">Chilis Rewarded</span>
           <strong id="rewardChiIssued" class="metric-number">—</strong>
-          <span class="metric-sub">Cumulative CHI delivered into this store wallet</span>
+          <span class="metric-sub">Cumulative CHI sent in 5 CHI reward distributions</span>
         </article>
 
         <article class="metric-card shopper-wallet-card">
@@ -107,7 +107,17 @@
           </div>
           <span class="metric-label">Shopper Wallets</span>
           <strong id="shopperWallets" class="metric-number">—</strong>
-          <span class="metric-sub">Every unique counterparty wallet tied to this store</span>
+          <span class="metric-sub">Unique wallets that received a 5 CHI reward</span>
+        </article>
+
+        <article class="metric-card balance-card">
+          <div class="metric-topline">
+            <span class="metric-icon balance-icon">CHI</span>
+            <span class="metric-tag">Live Balance</span>
+          </div>
+          <span class="metric-label">Store CHI Balance</span>
+          <strong id="storeChiBalance" class="metric-number">—</strong>
+          <span class="metric-sub">Current America’s Food Basket wallet balance on Base</span>
         </article>
       </div>
     </section>
@@ -118,7 +128,7 @@
         <strong id="walletStripStoreName">America's Food Basket Rockaway</strong>
         <span>All dashboard totals and unique shopper-wallet counts are tied to this public key.</span>
       </div>
-      <a id="programWalletLink" class="wallet-strip-link" href="https://basescan.org/address/0x7d6eB946664f1dEFA40c9582819e251ae994a05e" target="_blank" rel="noopener noreferrer">
+      <a id="programWalletLink" class="wallet-strip-link" href="https://basescan.org/token/0x25Ec4c3eF2A21d178922Fb02c7F92111852165E8?a=0x7d6eB946664f1dEFA40c9582819e251ae994a05e#transactions" target="_blank" rel="noopener noreferrer">
         <span id="programWalletShort">0x7d6e…a05e</span>
         <small>Open wallet on BaseScan ↗</small>
       </a>
@@ -128,8 +138,8 @@
       <div class="section-heading">
         <div>
           <span class="section-kicker">LIVE BASE ACTIVITY</span>
-          <h2>Chili Rewards and Redemptions</h2>
-          <p>Live activity for <strong id="activityStoreName">America's Food Basket Rockaway</strong>. The tracker is keyed to the public wallet below and shows live reward, shopper-wallet, and redemption activity tied to that store.</p>
+          <h2>Chili Reward Distributions</h2>
+          <p>Live activity for <strong id="activityStoreName">America's Food Basket Rockaway</strong>. The tracker is keyed to the public wallet below and shows live reward distributions and shopper-wallet activity tied to that store.</p>
         </div>
         <button id="activityRefreshButton" class="refresh-button secondary" type="button">↻ Refresh activity</button>
       </div>
@@ -138,14 +148,13 @@
         <div class="store-focus-card">
           <span>Tracked public key</span>
           <strong id="trackedStoreName">America's Food Basket Rockaway</strong>
-          <a id="trackedWalletLink" class="focus-wallet-link" href="https://basescan.org/address/0x7d6eB946664f1dEFA40c9582819e251ae994a05e" target="_blank" rel="noopener noreferrer">0x7d6eB946664f1dEFA40c9582819e251ae994a05e ↗</a>
+          <a id="trackedWalletLink" class="focus-wallet-link" href="https://basescan.org/token/0x25Ec4c3eF2A21d178922Fb02c7F92111852165E8?a=0x7d6eB946664f1dEFA40c9582819e251ae994a05e#transactions" target="_blank" rel="noopener noreferrer">0x7d6eB946664f1dEFA40c9582819e251ae994a05e ↗</a>
         </div>
         <label class="select-control">
           <span>Activity type</span>
           <select id="activityTypeFilter">
             <option value="all">All activity</option>
             <option value="reward">Rewards only</option>
-            <option value="redemption">Redemptions only</option>
             <option value="other">Other transfers</option>
           </select>
         </label>
@@ -169,7 +178,7 @@
             </tr>
           </thead>
           <tbody id="activityRows">
-            <tr><td colspan="5" class="empty-state"><span class="spinner"></span>Loading live Chili rewards and redemptions…</td></tr>
+            <tr><td colspan="5" class="empty-state"><span class="spinner"></span>Loading live Chili reward activity…</td></tr>
           </tbody>
         </table>
       </div>
@@ -185,7 +194,7 @@
         <div class="note-icon">i</div>
         <div>
           <h2>How this tracker classifies activity</h2>
-          <p>The tracker follows the current program rules for the tracked America’s Food Basket wallet. A transfer of exactly <strong>5 CHI</strong> into the wallet is classified as a reward.</p>
+          <p>The tracker follows the current program rules for the tracked America’s Food Basket wallet. A transfer of exactly <strong>5 CHI</strong> out of the wallet to another wallet is classified as a reward.</p>
         </div>
       </div>
 

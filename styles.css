@@ -386,7 +386,7 @@ button { color: inherit; }
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 .metric-card {
@@ -412,7 +412,7 @@ button { color: inherit; }
   background: var(--brand-green-soft);
 }
 .reward-count-card::after, .reward-chi-card::after { background: var(--reward-soft); }
-.shopper-wallet-card::after { background: var(--brand-green-soft); }
+.shopper-wallet-card::after, .balance-card::after { background: var(--brand-green-soft); }
 .redemption-count-card::after, .redeemed-chi-card::after { background: var(--brand-red-soft); }
 .metric-topline { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
 .metric-icon {
@@ -427,9 +427,9 @@ button { color: inherit; }
   font-weight: 900;
 }
 .reward-icon, .chili-icon { color: #ad6915; background: var(--reward-soft); }
-.wallet-icon { color: var(--brand-green); background: var(--brand-green-soft); }
+.wallet-icon, .balance-icon { color: var(--brand-green); background: var(--brand-green-soft); }
 .redemption-icon, .check-icon { color: var(--brand-red); background: var(--brand-red-soft); }
-.chili-icon { font-size: 11px; }
+.chili-icon, .balance-icon { font-size: 11px; }
 .metric-tag {
   padding: 6px 9px;
   border-radius: 999px;
@@ -660,7 +660,7 @@ tbody tr:hover td { background: #fbfefc; }
 @media (max-width: 1260px) {
   .site-header { grid-template-columns: 1fr auto; gap: 14px; }
   .desktop-nav { display: none; }
-  .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hero-panel { grid-template-columns: 1fr; }
   .hero-visual { min-height: 390px; }
   .brand-card { right: 38px; left: auto; }

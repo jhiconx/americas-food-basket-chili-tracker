@@ -4,12 +4,13 @@ const TRACKED_STORE = Object.freeze({
   wallet: '0x7d6eb946664f1defa40c9582819e251ae994a05e'
 });
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-const BASESCAN_TX_URL = `https://basescan.org/token/${BASE_TOKEN}#transactions`;
+const BASESCAN_TX_URL = `https://basescan.org/tokentxns?a=${TRACKED_STORE.wallet}&p=1`;
+const BASESCAN_BALANCE_URL = `https://basescan.org/token/${BASE_TOKEN}?a=${TRACKED_STORE.wallet}#transactions`;
+const BASE_RPC_URL = 'https://mainnet.base.org';
 const TIMEOUT_MS = 12_000;
 const TRANSFER_FETCH_LIMIT = '10000';
 const TABLE_RECORD_LIMIT = 300;
 const REWARD_CHI_AMOUNT = '5';
-const REDEMPTION_CHI_AMOUNT = '3';
 
 async function fetchWithTimeout(url, options = {}) {
   const controller = new AbortController();
@@ -61,8 +62,7 @@ function classifyTransfer({ event, amount, from, to }) {
   if (event === 'Burn') return 'Burn';
 
   const normalizedAmount = canonicalDecimal(amount);
-  if (normalizedAmount === REWARD_CHI_AMOUNT && to === wallet) return 'Reward';
-  if (normalizedAmount === REDEMPTION_CHI_AMOUNT && from === wallet) return 'Redemption';
+  if (normalizedAmount === REWARD_CHI_AMOUNT && from === wallet && to !== ZERO_ADDRESS) return 'Reward';
   return 'Other';
 }
 
@@ -214,11 +214,82 @@ function enrichTransfersWithTransactions(transfers, txInfo) {
   });
 }
 
-function calculateMetrics(transfers) {
+function rawHexToDecimalAmount(hexValue, decimals = 18) {
+  const text = String(hexValue || '').trim();
+  if (!/^0x[0-9a-f]+$/i.test(text)) return null;
+  return decimalAmount(BigInt(text).toString(), decimals);
+}
+
+async function fetchTokenBalanceFromBlockscout() {
+  const params = new URLSearchParams({
+    module: 'account',
+    action: 'tokenbalance',
+    contractaddress: BASE_TOKEN,
+    address: TRACKED_STORE.wallet,
+    tag: 'latest'
+  });
+
+  const response = await fetchWithTimeout(`https://base.blockscout.com/api?${params.toString()}`, {
+    headers: { accept: 'application/json' }
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+  const data = await response.json();
+  const rawBalance = String(data.result ?? '').trim();
+  if (!/^\d+$/.test(rawBalance)) {
+    throw new Error(String(data.message || data.result || 'Token balance unavailable'));
+  }
+
+  return {
+    balance: decimalAmount(rawBalance, 18),
+    source: 'Base Blockscout token balance indexer'
+  };
+}
+
+async function fetchTokenBalanceFromRpc() {
+  const walletArg = TRACKED_STORE.wallet.slice(2).padStart(64, '0');
+  const response = await fetchWithTimeout(BASE_RPC_URL, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'eth_call',
+      params: [{ to: BASE_TOKEN, data: `0x70a08231${walletArg}` }, 'latest']
+    })
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+  const data = await response.json();
+  if (data.error || !data.result) {
+    throw new Error(data.error?.message || 'Base RPC balanceOf call failed');
+  }
+
+  const balance = rawHexToDecimalAmount(data.result, 18);
+  if (balance === null) throw new Error('Base RPC returned an invalid token balance');
+
+  return {
+    balance,
+    source: 'Base mainnet RPC balanceOf'
+  };
+}
+
+async function fetchTokenBalance() {
+  try {
+    return await fetchTokenBalanceFromBlockscout();
+  } catch (blockscoutError) {
+    try {
+      const rpcResult = await fetchTokenBalanceFromRpc();
+      return { ...rpcResult, warning: `Blockscout balance lookup failed: ${blockscoutError.message}` };
+    } catch (rpcError) {
+      throw new Error(`Balance lookup failed: ${blockscoutError.message}; RPC fallback failed: ${rpcError.message}`);
+    }
+  }
+}
+
+function calculateMetrics(transfers, storeChiBalance = null) {
   let rewardTransactions = 0;
   let rewardChiIssued = 0;
-  let redemptionTransactions = 0;
-  let chiRedeemed = 0;
   let otherTransactions = 0;
   const uniqueShopperWallets = new Set();
 
@@ -226,21 +297,17 @@ function calculateMetrics(transfers) {
     if (transfer.activityType === 'Reward') {
       rewardTransactions += 1;
       rewardChiIssued += Number(transfer.amount || 0);
-    } else if (transfer.activityType === 'Redemption') {
-      redemptionTransactions += 1;
-      chiRedeemed += Number(transfer.amount || 0);
+
+      if (
+        transfer.to &&
+        transfer.to !== TRACKED_STORE.wallet &&
+        transfer.to !== ZERO_ADDRESS &&
+        transfer.to !== BASE_TOKEN.toLowerCase()
+      ) {
+        uniqueShopperWallets.add(transfer.to);
+      }
     } else {
       otherTransactions += 1;
-    }
-
-    const counterparty = transfer.from === TRACKED_STORE.wallet ? transfer.to : transfer.from;
-    if (
-      counterparty &&
-      counterparty !== TRACKED_STORE.wallet &&
-      counterparty !== ZERO_ADDRESS &&
-      counterparty !== BASE_TOKEN.toLowerCase()
-    ) {
-      uniqueShopperWallets.add(counterparty);
     }
   }
 
@@ -248,8 +315,7 @@ function calculateMetrics(transfers) {
     rewardTransactions,
     rewardChiIssued,
     shopperWallets: uniqueShopperWallets.size,
-    redemptionTransactions,
-    chiRedeemed,
+    storeChiBalance,
     otherTransactions,
     totalTransactions: transfers.length
   };
@@ -267,14 +333,16 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
   const fetchedAt = new Date().toISOString();
-  const [transferResult, contractTxResult] = await Promise.allSettled([
+  const [transferResult, contractTxResult, balanceResult] = await Promise.allSettled([
     fetchTokenTransfers(),
-    fetchContractTransactions()
+    fetchContractTransactions(),
+    fetchTokenBalance()
   ]);
 
   const warnings = [];
   const transferData = transferResult.status === 'fulfilled' ? transferResult.value : null;
   const contractTxData = contractTxResult.status === 'fulfilled' ? contractTxResult.value : null;
+  const balanceData = balanceResult.status === 'fulfilled' ? balanceResult.value : null;
 
   if (!transferData) {
     warnings.push(`Base CHI transfer feed unavailable: ${transferResult.reason?.message || 'unknown error'}`);
@@ -282,13 +350,18 @@ export default async function handler(req, res) {
   if (!contractTxData) {
     warnings.push(`Base CHI source-wallet feed unavailable: ${contractTxResult.reason?.message || 'unknown error'}`);
   }
+  if (!balanceData) {
+    warnings.push(`Base CHI wallet balance unavailable: ${balanceResult.reason?.message || 'unknown error'}`);
+  } else if (balanceData.warning) {
+    warnings.push(balanceData.warning);
+  }
   if (transferData?.capped) {
     warnings.push(`The Base transfer feed reached the ${transferData.fetchedLimit.toLocaleString('en-US')} record fetch limit. Reported totals may be higher.`);
   }
 
   const allTransfers = transferData?.allTransfers || [];
   const visibleTransfers = enrichTransfersWithTransactions(transferData?.transfers || [], contractTxData);
-  const metrics = calculateMetrics(allTransfers);
+  const metrics = calculateMetrics(allTransfers, balanceData?.balance ?? null);
 
   return res.status(200).json({
     ok: Boolean(transferData),
@@ -299,16 +372,20 @@ export default async function handler(req, res) {
       token: BASE_TOKEN,
       explorerUrl: BASESCAN_TX_URL
     },
+    balance: {
+      value: balanceData?.balance ?? null,
+      source: balanceData?.source || null,
+      explorerUrl: BASESCAN_BALANCE_URL
+    },
     trackedStore: {
       name: TRACKED_STORE.name,
       wallet: TRACKED_STORE.wallet,
       shortWallet: `${TRACKED_STORE.wallet.slice(0, 7)}…${TRACKED_STORE.wallet.slice(-4)}`,
-      explorerUrl: `https://basescan.org/address/${TRACKED_STORE.wallet}`
+      explorerUrl: BASESCAN_BALANCE_URL
     },
     rules: {
       rewardChiAmount: Number(REWARD_CHI_AMOUNT),
-      redemptionChiAmount: Number(REDEMPTION_CHI_AMOUNT),
-      classification: 'Exact transfer amount + wallet direction'
+      classification: 'An exact 5 CHI transfer sent out of the tracked wallet is a reward'
     },
     metrics,
     transactions: {
@@ -323,7 +400,7 @@ export default async function handler(req, res) {
       signerSourceUrl: contractTxData?.sourceUrl || null,
       explorerUrl: BASESCAN_TX_URL
     },
-    note: 'A 5 CHI Base transfer into the tracked America\'s Food Basket wallet is classified as a reward. Shopper wallets count unique counterparty addresses tied to the tracked wallet, excluding the tracked wallet, the CHI token contract, and the zero address.',
+    note: 'An exact 5 CHI Base transfer sent out of the tracked America\'s Food Basket wallet to another wallet is classified as a reward. Chilis Rewarded is the cumulative CHI from those reward distributions. Shopper Wallets counts unique reward-recipient addresses.',
     warnings
   });
 }

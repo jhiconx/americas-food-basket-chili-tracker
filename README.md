@@ -4,35 +4,40 @@ A Vercel-ready Chili rewards tracker branded for **America's Food Basket** and c
 
 `0x7d6eB946664f1dEFA40c9582819e251ae994a05e`
 
-## What it tracks
+## What it does
 
-- **Rewards Issued:** exact 5 CHI transfers into the tracked store wallet
-- **Chilis Rewarded:** total CHI across those reward transfers
-- **Shopper Wallets:** every unique counterparty address tied to the tracked store wallet, excluding the tracked wallet, the CHI token contract, and the zero address
-- **Redemptions Completed:** exact 3 CHI transfers out of the tracked store wallet
-- **Total Chilis Redeemed:** the total CHI across those redemption transfers
-- Latest wallet-specific Base CHI activity
-
-The dashboard includes manual refresh controls and automatically refreshes every 20 seconds.
+- Tracks **Base CHI** activity tied to the wallet above
+- Counts every exact **5 CHI outgoing** transfer as one **Reward Issued**
+- Adds those exact 5 CHI reward distributions together for **Chilis Rewarded**
+- Counts the unique recipient wallets for **Shopper Wallets**
+- Reads the wallet's current CHI token balance for **Store CHI Balance**
+- Refreshes automatically every 20 seconds and supports manual refresh
+- Uses a Vercel serverless function at `/api/live`
 
 ## Files
 
 - `index.html` — dashboard markup
 - `styles.css` — America's Food Basket branding and layout
-- `app.js` — frontend logic and 20-second refresh cycle
-- `api/live.js` — live Base data fetch, wallet filtering, and real-time metric calculations
+- `app.js` — frontend logic and rendering
+- `api/live.js` — live Base data fetch and wallet-specific filtering
 - `assets/` — logo, favicon, and Chili mascot
 
-## Update an existing GitHub/Vercel deployment
+## Deploy on GitHub + Vercel
 
-1. Replace the existing repository files with the contents of this folder.
+1. Upload this folder into your GitHub repo.
 2. Keep this structure exactly:
    - `index.html`
    - `styles.css`
    - `app.js`
    - `api/live.js`
    - `assets/...`
-3. Commit directly to `main`.
-4. Vercel should redeploy automatically.
+3. Import the repo into Vercel.
+4. Framework preset can be **Other**.
+5. No environment variables are required for this version.
+6. Deploy.
 
-No environment variables are required for this version.
+## Live logic
+
+The API reads wallet-specific Base CHI transfer history from the public Base Blockscout indexer. The current token balance is read from Blockscout with a direct Base mainnet `balanceOf` RPC fallback. BaseScan links remain available in the dashboard for public verification.
+
+Metrics are wallet-scoped, not network-wide.
