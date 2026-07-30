@@ -55,3 +55,8 @@ Metrics are wallet-scoped, not network-wide.
 - Adds a **Live Campaigns** carousel above the activity table
 - Shows campaign items scrolling from right to left
 - Displays each product card with a visual tile and SKU text underneath
+
+
+## V10 access gate
+
+The site now opens with a simple access-code screen. The code is `CHILI` and access lasts for the current browser tab/session. This is a client-side convenience gate, not strong security; the code can be discovered by someone inspecting the public source files.
