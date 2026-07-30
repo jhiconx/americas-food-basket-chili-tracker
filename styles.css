@@ -583,27 +583,43 @@ button { color: inherit; }
   text-transform: uppercase;
 }
 
+.campaign-product-frame {
+  position: relative;
+  z-index: 1;
+  width: 126px;
+  height: 166px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  padding: 10px 8px;
+  border-radius: 28px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+.campaign-product-frame.placeholder {
+  background: rgba(255,255,255,.92);
+}
 .campaign-product-image {
   position: relative;
   z-index: 1;
   display: block;
-  max-width: 108px;
-  max-height: 132px;
-  width: auto;
-  height: auto;
-  align-self: flex-end;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 12px 20px rgba(0,0,0,0.18));
+  object-position: center center;
+  filter: drop-shadow(0 10px 16px rgba(0,0,0,0.14));
 }
 .campaign-packshot {
   position: relative;
   z-index: 1;
-  width: 92px;
-  height: 118px;
-  align-self: flex-end;
-  border-radius: 18px;
-  background: rgba(255,255,255,.94);
-  box-shadow: 0 14px 28px rgba(0,0,0,0.12);
+  width: 100%;
+  height: 100%;
+  align-self: auto;
+  border-radius: 24px;
+  background: rgba(247, 248, 245, .96);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
 }
 .campaign-packshot::before {
   content: '';
@@ -625,6 +641,10 @@ button { color: inherit; }
 }
 .campaign-pack-line.top { top: 26px; }
 .campaign-pack-line.bottom { top: 46px; }
+.campaign-card.coke .campaign-product-image { transform: scale(1.08); }
+.campaign-card.cream .campaign-product-image { transform: scale(0.96); }
+.campaign-card.goya .campaign-product-image { transform: scale(0.98); }
+
 .campaign-copy {
   display: grid;
   gap: 6px;
@@ -851,10 +871,10 @@ tbody tr:hover td { background: #fbfefc; }
   .hero-copy { padding: 32px 22px 8px; }
   .hero-copy h1 { font-size: 50px; }
   .hero-copy > p { font-size: 15px; }
-  .hero-visual { min-height: 340px; }
-  .brand-card { position: relative; left: auto; top: auto; right: auto; width: calc(100% - 44px); margin: 0 auto 12px; }
-  .mascot-card { left: 20px; right: auto; bottom: 54px; width: 150px; }
-  .powered-card { right: 18px; bottom: 18px; }
+  .hero-visual { min-height: 260px; display: grid; justify-items: center; align-content: start; gap: 14px; padding: 4px 0 20px; }
+  .brand-card { position: relative; left: auto; top: auto; right: auto; width: calc(100% - 44px); margin: 0 auto 0; }
+  .mascot-card { position: relative; left: auto; right: auto; bottom: auto; width: 126px; margin: 0 auto; order: -1; }
+  .powered-card { position: relative; right: auto; bottom: auto; margin: 0 auto; width: fit-content; }
   .metric-grid { grid-template-columns: 1fr; }
   .metric-card { min-height: 190px; }
   .activity-section { padding: 22px 14px; border-radius: 18px; }

@@ -1,4 +1,4 @@
-const TRACKER_BUILD = 'v7-carousel-images';
+const TRACKER_BUILD = 'v8-uniform-carousel-mobile-fix';
 const API_URL = '/api/live';
 const BASESCAN_TX_URL = 'https://basescan.org/tokentxns?a=0x7d6eb946664f1defa40c9582819e251ae994a05e&p=1';
 const REFRESH_MS = 20_000;
@@ -42,7 +42,8 @@ const LIVE_CAMPAIGNS = [
     badge: 'Coca-Cola',
     title: '2L Variety',
     sku: 'Original Taste · Diet Coke · Cherry Coca-Cola · Coca-Cola Zero Sugar',
-    discount: '$0.75'
+    discount: '$0.75',
+    image: '/assets/diet-coke.png'
   },
   {
     theme: 'cream',
@@ -94,12 +95,14 @@ function renderCampaigns() {
     <article class="campaign-card ${escapeHtml(item.theme)}" aria-label="${escapeHtml(item.badge)} ${escapeHtml(item.title)} campaign card ${index + 1}">
       <div class="campaign-media ${escapeHtml(item.theme)}">
         <span class="campaign-badge">${escapeHtml(item.badge)}</span>
-        ${item.image
-          ? `<img class="campaign-product-image" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" />`
-          : `<div class="campaign-packshot" aria-hidden="true">
-              <span class="campaign-pack-line top"></span>
-              <span class="campaign-pack-line bottom"></span>
-            </div>`}
+        <div class="campaign-product-frame${item.image ? '' : ' placeholder'}">
+          ${item.image
+            ? `<img class="campaign-product-image" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" />`
+            : `<div class="campaign-packshot" aria-hidden="true">
+                <span class="campaign-pack-line top"></span>
+                <span class="campaign-pack-line bottom"></span>
+              </div>`}
+        </div>
       </div>
       <div class="campaign-copy">
         <span class="campaign-discount">${escapeHtml(item.discount)} off</span>
