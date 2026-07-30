@@ -1,4 +1,4 @@
-const TRACKER_BUILD = 'v9-pagination';
+const TRACKER_BUILD = 'v11-live-data-fallback';
 const API_URL = '/api/live';
 const BASESCAN_TX_URL = 'https://basescan.org/tokentxns?a=0x7d6eb946664f1defa40c9582819e251ae994a05e&p=1';
 const REFRESH_MS = 20_000;
@@ -10,7 +10,8 @@ const state = {
   feedbackTimer: null,
   activityType: 'all',
   currentPage: 1,
-  rowsPerPage: 10
+  rowsPerPage: 10,
+  started: false
 };
 
 
@@ -333,8 +334,11 @@ function renderActivity(data) {
 
   if (!totalLoaded) {
     renderPagination(0);
-    if (elements.activityStatus) elements.activityStatus.textContent = 'No Base CHI transaction records were returned for the tracked store wallet.';
-    elements.activityRows.innerHTML = '<tr><td colspan="5" class="empty-state">No Chili reward activity was returned for the tracked wallet. Use “Refresh activity” to retry or open BaseScan.</td></tr>';
+    const warning = Array.isArray(data.warnings) && data.warnings.length ? data.warnings[0] : '';
+    if (elements.activityStatus) {
+      elements.activityStatus.textContent = warning || 'No Base CHI transaction records were returned for the tracked store wallet.';
+    }
+    elements.activityRows.innerHTML = `<tr><td colspan="5" class="empty-state">${escapeHtml(warning || 'No Chili reward activity was returned for the tracked wallet. Use “Refresh activity” to retry or open BaseScan.')}</td></tr>`;
     return;
   }
 
@@ -483,6 +487,16 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') loadLiveData();
 });
 
-renderCampaigns();
-loadLiveData();
-scheduleRefresh();
+function startTracker() {
+  if (state.started) return;
+  state.started = true;
+  renderCampaigns();
+  loadLiveData();
+  scheduleRefresh();
+}
+
+if (window.__AFB_ACCESS_GRANTED__ || document.documentElement.classList.contains('access-granted')) {
+  startTracker();
+} else {
+  window.addEventListener('afb-access-granted', startTracker, { once: true });
+}

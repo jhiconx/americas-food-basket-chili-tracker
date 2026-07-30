@@ -60,3 +60,11 @@ Metrics are wallet-scoped, not network-wide.
 ## V10 access gate
 
 The site now opens with a simple access-code screen. The code is `CHILI` and access lasts for the current browser tab/session. This is a client-side convenience gate, not strong security; the code can be discovered by someone inspecting the public source files.
+
+
+## V11 live-data repair
+
+- The access-code screen now starts the live tracker only after `CHILI` is accepted.
+- The server first uses the legacy Blockscout ERC-20 transfer endpoint.
+- If that endpoint returns no records or fails, the server automatically falls back to Blockscout V2 address token transfers filtered to the CHI token and outgoing transfers.
+- The wallet balance continues to use Blockscout with a Base RPC fallback.

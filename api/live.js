@@ -10,6 +10,8 @@ const BASE_RPC_URL = 'https://mainnet.base.org';
 const TIMEOUT_MS = 12_000;
 const TRANSFER_FETCH_LIMIT = '10000';
 const TABLE_RECORD_LIMIT = 300;
+const V2_MAX_PAGES = 24;
+const V2_MAX_RECORDS = 1200;
 const REWARD_CHI_AMOUNT = '5';
 
 async function fetchWithTimeout(url, options = {}) {
@@ -106,7 +108,7 @@ function isTrackedTransfer(transfer) {
   return transfer && (transfer.from === TRACKED_STORE.wallet || transfer.to === TRACKED_STORE.wallet);
 }
 
-async function fetchTokenTransfers(offset = TRANSFER_FETCH_LIMIT) {
+async function fetchTokenTransfersLegacy(offset = TRANSFER_FETCH_LIMIT) {
   const params = new URLSearchParams({
     module: 'account',
     action: 'tokentx',
@@ -145,10 +147,135 @@ async function fetchTokenTransfers(offset = TRANSFER_FETCH_LIMIT) {
     totalCount: allTransfers.length,
     fetchedLimit: Number(offset),
     capped: allTransfers.length >= Number(offset),
-    source: 'Base Blockscout ERC-20 indexer',
+    source: 'Base Blockscout legacy ERC-20 indexer',
     sourceUrl: `https://base.blockscout.com/token/${BASE_TOKEN}?tab=token_transfers`,
     explorerUrl: BASESCAN_TX_URL
   };
+}
+
+
+function normalizeV2Transfer(item) {
+  const token = BASE_TOKEN.toLowerCase();
+  const from = String(item?.from?.hash || item?.from || '').toLowerCase();
+  const to = String(item?.to?.hash || item?.to || '').toLowerCase();
+  const transactionHash = String(item?.transaction_hash || item?.transactionHash || '').toLowerCase();
+  const contractAddress = String(item?.token?.address_hash || item?.token?.address || BASE_TOKEN).toLowerCase();
+
+  if (contractAddress !== token || !transactionHash || !from || !to) return null;
+
+  let event = 'Transfer';
+  if (from === ZERO_ADDRESS) event = 'Mint';
+  else if (to === ZERO_ADDRESS) event = 'Burn';
+
+  const rawValue = item?.total?.value ?? item?.value ?? '';
+  const decimals = item?.total?.decimals ?? item?.token?.decimals ?? 18;
+  const amount = decimalAmount(rawValue, decimals);
+  const activityType = classifyTransfer({ event, amount, from, to });
+
+  return {
+    chain: 'Base',
+    chainKey: 'base',
+    transactionHash,
+    transactionUrl: `https://basescan.org/tx/${transactionHash}`,
+    blockNumber: String(item?.block_number || ''),
+    timestamp: item?.timestamp || null,
+    from,
+    to,
+    fromUrl: `https://basescan.org/address/${from}`,
+    toUrl: `https://basescan.org/address/${to}`,
+    sourceWallet: from,
+    sourceWalletUrl: `https://basescan.org/address/${from}`,
+    event,
+    activityType,
+    amount,
+    amountRaw: String(rawValue ?? ''),
+    decimals: Number(decimals ?? 18),
+    tokenSymbol: item?.token?.symbol || 'CHI',
+    logIndex: String(item?.log_index ?? item?.index ?? '')
+  };
+}
+
+async function fetchTokenTransfersV2() {
+  const baseParams = new URLSearchParams({
+    type: 'ERC-20',
+    filter: 'from',
+    token: BASE_TOKEN
+  });
+
+  let nextPageParams = null;
+  let pageCount = 0;
+  const seen = new Set();
+  const allTransfers = [];
+
+  while (pageCount < V2_MAX_PAGES && allTransfers.length < V2_MAX_RECORDS) {
+    const params = new URLSearchParams(baseParams);
+    if (nextPageParams && typeof nextPageParams === 'object') {
+      for (const [key, value] of Object.entries(nextPageParams)) {
+        if (value !== null && value !== undefined && value !== '') params.set(key, String(value));
+      }
+    }
+
+    const url = `https://base.blockscout.com/api/v2/addresses/${TRACKED_STORE.wallet}/token-transfers?${params.toString()}`;
+    const response = await fetchWithTimeout(url, { headers: { accept: 'application/json' } });
+    if (!response.ok) throw new Error(`V2 HTTP ${response.status}`);
+
+    const data = await response.json();
+    const items = Array.isArray(data.items) ? data.items : [];
+
+    for (const item of items) {
+      const transfer = normalizeV2Transfer(item);
+      if (!transfer || !isTrackedTransfer(transfer)) continue;
+      const key = `${transfer.transactionHash}:${transfer.logIndex}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      allTransfers.push(transfer);
+      if (allTransfers.length >= V2_MAX_RECORDS) break;
+    }
+
+    pageCount += 1;
+    nextPageParams = data.next_page_params && Object.keys(data.next_page_params).length
+      ? data.next_page_params
+      : null;
+    if (!nextPageParams || !items.length) break;
+  }
+
+  const capped = Boolean(nextPageParams) || allTransfers.length >= V2_MAX_RECORDS;
+  return {
+    allTransfers,
+    transfers: allTransfers.slice(0, TABLE_RECORD_LIMIT),
+    totalCount: allTransfers.length,
+    fetchedLimit: V2_MAX_RECORDS,
+    capped,
+    source: 'Base Blockscout V2 address token-transfer indexer',
+    sourceUrl: `https://base.blockscout.com/address/${TRACKED_STORE.wallet}?tab=token_transfers`,
+    explorerUrl: BASESCAN_TX_URL,
+    fallbackUsed: true,
+    pagesFetched: pageCount
+  };
+}
+
+async function fetchTokenTransfers() {
+  let legacyError = null;
+  try {
+    const legacy = await fetchTokenTransfersLegacy();
+    if (legacy.allTransfers.length) return legacy;
+    legacyError = new Error('Legacy transfer endpoint returned zero records');
+  } catch (error) {
+    legacyError = error;
+  }
+
+  try {
+    const v2 = await fetchTokenTransfersV2();
+    if (!v2.allTransfers.length) {
+      throw new Error('V2 transfer endpoint returned zero records');
+    }
+    return {
+      ...v2,
+      fallbackWarning: `Legacy transfer lookup failed: ${legacyError?.message || 'unknown error'}`
+    };
+  } catch (v2Error) {
+    throw new Error(`Legacy lookup failed: ${legacyError?.message || 'unknown error'}; V2 fallback failed: ${v2Error.message}`);
+  }
 }
 
 async function fetchContractTransactions(offset = '500') {
@@ -333,35 +460,46 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
   const fetchedAt = new Date().toISOString();
-  const [transferResult, contractTxResult, balanceResult] = await Promise.allSettled([
+  const [transferResult, balanceResult] = await Promise.allSettled([
     fetchTokenTransfers(),
-    fetchContractTransactions(),
     fetchTokenBalance()
   ]);
 
   const warnings = [];
   const transferData = transferResult.status === 'fulfilled' ? transferResult.value : null;
-  const contractTxData = contractTxResult.status === 'fulfilled' ? contractTxResult.value : null;
   const balanceData = balanceResult.status === 'fulfilled' ? balanceResult.value : null;
 
   if (!transferData) {
     warnings.push(`Base CHI transfer feed unavailable: ${transferResult.reason?.message || 'unknown error'}`);
-  }
-  if (!contractTxData) {
-    warnings.push(`Base CHI source-wallet feed unavailable: ${contractTxResult.reason?.message || 'unknown error'}`);
   }
   if (!balanceData) {
     warnings.push(`Base CHI wallet balance unavailable: ${balanceResult.reason?.message || 'unknown error'}`);
   } else if (balanceData.warning) {
     warnings.push(balanceData.warning);
   }
+  if (transferData?.fallbackWarning) {
+    warnings.push(transferData.fallbackWarning);
+  }
   if (transferData?.capped) {
     warnings.push(`The Base transfer feed reached the ${transferData.fetchedLimit.toLocaleString('en-US')} record fetch limit. Reported totals may be higher.`);
   }
 
   const allTransfers = transferData?.allTransfers || [];
-  const visibleTransfers = enrichTransfersWithTransactions(transferData?.transfers || [], contractTxData);
-  const metrics = calculateMetrics(allTransfers, balanceData?.balance ?? null);
+  const visibleTransfers = (transferData?.transfers || []).map(transfer => ({
+    ...transfer,
+    sourceWallet: transfer.sourceWallet || transfer.from || null,
+    sourceWalletUrl: transfer.sourceWalletUrl || (transfer.from ? `https://basescan.org/address/${transfer.from}` : null)
+  }));
+  const metrics = transferData
+    ? calculateMetrics(allTransfers, balanceData?.balance ?? null)
+    : {
+        rewardTransactions: null,
+        rewardChiIssued: null,
+        shopperWallets: null,
+        storeChiBalance: balanceData?.balance ?? null,
+        otherTransactions: null,
+        totalTransactions: null
+      };
 
   return res.status(200).json({
     ok: Boolean(transferData),
@@ -396,8 +534,6 @@ export default async function handler(req, res) {
       records: visibleTransfers,
       source: transferData?.source || null,
       sourceUrl: transferData?.sourceUrl || null,
-      signerSource: contractTxData?.source || null,
-      signerSourceUrl: contractTxData?.sourceUrl || null,
       explorerUrl: BASESCAN_TX_URL
     },
     note: 'An exact 5 CHI Base transfer sent out of the tracked America\'s Food Basket wallet to another wallet is classified as a reward. Chilis Rewarded is the cumulative CHI from those reward distributions. Shopper Wallets counts unique reward-recipient addresses.',
