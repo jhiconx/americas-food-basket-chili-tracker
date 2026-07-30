@@ -1,4 +1,4 @@
-const TRACKER_BUILD = 'v8-uniform-carousel-mobile-fix';
+const TRACKER_BUILD = 'v9-pagination';
 const API_URL = '/api/live';
 const BASESCAN_TX_URL = 'https://basescan.org/tokentxns?a=0x7d6eb946664f1defa40c9582819e251ae994a05e&p=1';
 const REFRESH_MS = 20_000;
@@ -8,7 +8,9 @@ const state = {
   loading: false,
   timer: null,
   feedbackTimer: null,
-  activityType: 'all'
+  activityType: 'all',
+  currentPage: 1,
+  rowsPerPage: 10
 };
 
 
@@ -83,7 +85,13 @@ const elements = {
   programWalletLink: document.querySelector('#programWalletLink'),
   programWalletShort: document.querySelector('#programWalletShort'),
   noteWalletShort: document.querySelector('#noteWalletShort'),
-  campaignTrack: document.querySelector('#campaignTrack')
+  campaignTrack: document.querySelector('#campaignTrack'),
+  pageFirst: document.querySelector('#pageFirst'),
+  pagePrev: document.querySelector('#pagePrev'),
+  pageNext: document.querySelector('#pageNext'),
+  pageLast: document.querySelector('#pageLast'),
+  pageStatus: document.querySelector('#pageStatus'),
+  tablePagination: document.querySelector('#tablePagination')
 };
 
 
@@ -277,6 +285,25 @@ function renderStoreCell(trackedStore) {
     </div>`;
 }
 
+function renderPagination(totalItems) {
+  const totalPages = Math.max(1, Math.ceil(totalItems / state.rowsPerPage));
+  state.currentPage = Math.min(Math.max(1, state.currentPage), totalPages);
+
+  if (elements.pageStatus) {
+    elements.pageStatus.textContent = `Page ${state.currentPage} of ${totalPages}`;
+  }
+
+  const atFirst = state.currentPage <= 1;
+  const atLast = state.currentPage >= totalPages;
+  if (elements.pageFirst) elements.pageFirst.disabled = atFirst;
+  if (elements.pagePrev) elements.pagePrev.disabled = atFirst;
+  if (elements.pageNext) elements.pageNext.disabled = atLast;
+  if (elements.pageLast) elements.pageLast.disabled = atLast;
+  if (elements.tablePagination) elements.tablePagination.hidden = totalItems <= state.rowsPerPage;
+
+  return { totalPages, startIndex: (state.currentPage - 1) * state.rowsPerPage, endIndex: state.currentPage * state.rowsPerPage };
+}
+
 function renderActivity(data) {
   if (!elements.activityRows) return;
 
@@ -305,22 +332,28 @@ function renderActivity(data) {
   }
 
   if (!totalLoaded) {
+    renderPagination(0);
     if (elements.activityStatus) elements.activityStatus.textContent = 'No Base CHI transaction records were returned for the tracked store wallet.';
     elements.activityRows.innerHTML = '<tr><td colspan="5" class="empty-state">No Chili reward activity was returned for the tracked wallet. Use “Refresh activity” to retry or open BaseScan.</td></tr>';
     return;
   }
 
   if (!transfers.length) {
+    renderPagination(0);
     const message = 'No loaded Chili activity matched the selected filter.';
     if (elements.activityStatus) elements.activityStatus.textContent = message;
     elements.activityRows.innerHTML = `<tr><td colspan="5" class="empty-state">${escapeHtml(message)}</td></tr>`;
     return;
   }
 
+  const { startIndex, endIndex } = renderPagination(transfers.length);
+  const paginatedTransfers = transfers.slice(startIndex, endIndex);
+  const rangeStart = transfers.length ? startIndex + 1 : 0;
+  const rangeEnd = Math.min(endIndex, transfers.length);
   const typeText = state.activityType === 'all' ? '' : ` · ${state.activityType}`;
-  if (elements.activityStatus) elements.activityStatus.textContent = `Showing ${formatNumber(transfers.length)} latest loaded rows${typeText}. Metrics are calculated from ${formatNumber(indexedTotal)}${capped ? '+' : ''} indexed Base transfers for the tracked store wallet.`;
+  if (elements.activityStatus) elements.activityStatus.textContent = `Showing ${formatNumber(rangeStart)}-${formatNumber(rangeEnd)} of ${formatNumber(transfers.length)} rows${typeText}. Metrics are calculated from ${formatNumber(indexedTotal)}${capped ? '+' : ''} indexed Base transfers for the tracked store wallet.`;
 
-  elements.activityRows.innerHTML = transfers.map(item => {
+  elements.activityRows.innerHTML = paginatedTransfers.map(item => {
     const tx = item.transactionHash || '';
     const sourceWallet = item.sourceWallet || item.transactionInitiator || item.from || '';
     const txLink = item.transactionUrl || `https://basescan.org/tx/${tx}`;
@@ -407,6 +440,7 @@ function scheduleRefresh() {
 function rerenderActivityFromControls() {
   if (!state.data) return;
   state.activityType = elements.activityTypeFilter?.value || 'all';
+  state.currentPage = 1;
   renderActivity(state.data);
 }
 
@@ -417,9 +451,33 @@ if (elements.clearFilters) {
   elements.clearFilters.addEventListener('click', () => {
     if (elements.activityTypeFilter) elements.activityTypeFilter.value = 'all';
     state.activityType = 'all';
+    state.currentPage = 1;
     if (state.data) renderActivity(state.data);
   });
 }
+
+
+if (elements.pageFirst) elements.pageFirst.addEventListener('click', () => {
+  if (!state.data) return;
+  state.currentPage = 1;
+  renderActivity(state.data);
+});
+if (elements.pagePrev) elements.pagePrev.addEventListener('click', () => {
+  if (!state.data) return;
+  state.currentPage = Math.max(1, state.currentPage - 1);
+  renderActivity(state.data);
+});
+if (elements.pageNext) elements.pageNext.addEventListener('click', () => {
+  if (!state.data) return;
+  state.currentPage += 1;
+  renderActivity(state.data);
+});
+if (elements.pageLast) elements.pageLast.addEventListener('click', () => {
+  if (!state.data) return;
+  const total = filteredTransfers(state.data).length;
+  state.currentPage = Math.max(1, Math.ceil(total / state.rowsPerPage));
+  renderActivity(state.data);
+});
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') loadLiveData();

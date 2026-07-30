@@ -784,6 +784,52 @@ tbody tr:hover td { background: #fbfefc; }
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 0 2px;
+}
+.table-pagination[hidden] { display: none; }
+.page-button,
+.page-status {
+  min-height: 56px;
+  padding: 0 20px;
+  border: 1px solid #d8ddd8;
+  border-radius: 16px;
+  background: #fff;
+  color: #5f6872;
+  font-size: 18px;
+  font-weight: 700;
+}
+.page-button {
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, transform .18s ease, border-color .18s ease;
+}
+.page-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #c8d0ca;
+}
+.page-button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+.page-button.icon {
+  min-width: 56px;
+  padding: 0;
+  font-size: 34px;
+  line-height: 1;
+}
+.page-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  background: #f6f8f9;
+}
+
 .table-footer { padding-top: 14px; }
 .table-footer a { color: var(--brand-green); font-weight: 800; text-decoration: none; }
 
@@ -861,6 +907,10 @@ tbody tr:hover td { background: #fbfefc; }
 }
 
 @media (max-width: 620px) {
+  .table-pagination { gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .page-button, .page-status { min-height: 48px; padding: 0 14px; font-size: 16px; border-radius: 14px; }
+  .page-button.icon { min-width: 48px; font-size: 28px; }
+  .page-status { min-width: 170px; }
   .campaigns-section { padding-top: 30px; }
   .campaign-carousel-shell { padding: 12px; border-radius: 18px; }
   .campaign-card { width: 200px; flex-basis: 200px; }
